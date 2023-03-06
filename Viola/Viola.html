@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Viola</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lisa">
+    <meta name="version" content="2023-02-19">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            display: block;
+            background-color: rgb(48, 183, 0);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id='cnv'></canvas>
+    <script>
+    window.onload = () => {
+        const cnv = document.querySelector('#cnv');
+        const grass = cnv.getContext('2d');
+        cnv.width = (document.getElementsByTagName('body')[0]).clientWidth;
+        cnv.height = (document.getElementsByTagName('body')[0]).clientHeight;
+        const vmin = cnv.height < cnv.width ? cnv.height: cnv.width;
+        
+        // Helper
+        function rgbaArr2String(arr) {
+            /* RGBA array to rgba() string 
+            
+            @param arr. Color array of length 4 à values [0; 255].
+            
+            @return string.
+            */
+            return `rgba(${arr[0]},${arr[1]},${arr[2]},${arr[3]})`;
+        }
+        const alias = [67,114,101,97,116,101,100,32,98,121,32,76,105,115,97,55357,56368,46,32,84,104,97,110,107,115,32,102,111,114,32,115,116,117,100,121,105,110,103,32,116,104,101,32,99,111,100,101,33,55356,57195];
+        // Viola
+        class Viola {
+            constructor(x, y, r, ori,
+                        colors={'fillBase': [255, 215, 0, 0.9],
+                                'fillFlanker': [255, 215, 0, 0.9],
+                                'fillTop': [0, 87, 183, 0.9],
+                                'fillSprinkle': [102, 88, 60, 1],
+                                'fillCenter': [255, 255, 255, 0.9]}) {
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.ori = ori;
+                this.colors = colors;
+                this.petal = {};
+                this.#makePetals();
+            }
+            #makePetals() {
+                this.petal.base = this.#makePetalBase();
+                this.petal.flanker = this.#makePetalFlanker();
+                this.petal.top = this.#makePetalTop();
+                this.petal.center = this.#makeCenter();
+                this.petal.sprinkle = this.#makeSprinkle();
+            }
+            #makeCenter() {
+                const path = new Path2D();
+                path.moveTo(0, 0);
+                path.bezierCurveTo(-0.4*this.r, 0.25*this.r, -0.1*this.r, 0.5*this.r, 0, 0);
+                path.bezierCurveTo(0.4*this.r, 0.25*this.r, 0.1*this.r, 0.5*this.r, 0, 0);
+                path.closePath();
+                return path;
+            }
+            #makeSprinkle() {
+                const path = new Path2D();
+                path.moveTo(0, 0);
+                path.bezierCurveTo(-0.4*this.r, 0.6*this.r, -0.1*this.r, 0.6*this.r, 0, 0);
+                path.bezierCurveTo(-0.1*this.r, 0.6*this.r, 0.1*this.r, 0.6*this.r, 0, 0);
+                path.bezierCurveTo(0.4*this.r, 0.6*this.r, 0.1*this.r, 0.6*this.r, 0, 0);
+                path.bezierCurveTo(-0.6*this.r, -0.3*this.r, -0.6*this.r, 0.4*this.r, 0, 0);
+                path.bezierCurveTo(0.6*this.r, -0.3*this.r, 0.6*this.r, 0.4*this.r, 0, 0);
+                path.closePath();
+                return path;
+            }
+            #makePetalBase() {
+                const path = new Path2D();
+                path.moveTo(0, 0);
+                path.bezierCurveTo(-1.25*this.r, this.r, 1.25*this.r, this.r, 0, 0);
+                path.closePath();
+                return path;
+            }
+            #makePetalFlanker() {
+                const path = new Path2D();
+                path.moveTo(0, 0.1*this.r);
+                path.bezierCurveTo(-1*this.r, 1*this.r, -1.25*this.r, -1.25*this.r, 0, 0.1*this.r);
+                path.bezierCurveTo(1*this.r, 1*this.r, 1.25*this.r, -1.25*this.r, 0, 0.1*this.r);
+                path.closePath();
+                return path;
+            }
+            #makePetalTop() {
+                const path = new Path2D();
+                path.moveTo(0, 0.1*this.r);
+                path.bezierCurveTo(-1.5*this.r, -0*this.r, 0.1*this.r, -1.75*this.r, 0, 0.1*this.r);
+                path.bezierCurveTo(1.5*this.r, -0*this.r, 0.1*this.r, -1.75*this.r, 0, 0.1*this.r);
+                path.closePath();
+                return path;
+            }
+            update(x, y, r, ori) {
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.ori = ori;
+                this.#makePetals();
+            }
+            draw(ctx) {
+                ctx.setTransform(1, 0, 0, 1, this.x, this.y);
+                ctx.rotate(this.ori);
+                
+                ctx.fillStyle = rgbaArr2String(this.colors.fillTop);
+                ctx.fill(this.petal.top);
+                ctx.fillStyle = rgbaArr2String(this.colors.fillBase);
+                ctx.fill(this.petal.base);
+                ctx.fillStyle = rgbaArr2String(this.colors.fillFlanker);
+                ctx.fill(this.petal.flanker);
+                
+                ctx.fillStyle = rgbaArr2String(this.colors.fillSprinkle);
+                ctx.fill(this.petal.sprinkle);
+                ctx.fillStyle = rgbaArr2String(this.colors.fillCenter);
+                ctx.fill(this.petal.center);
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            }
+        }
+        
+        
+        const viola = new Viola(vmin*0.2, vmin*0.2, vmin*0.2, 0.1*Math.PI);
+        
+        cnv.addEventListener('click', (ev) => {
+            const [px, py] = [ev.clientX - cnv.getBoundingClientRect().left, ev.clientY - cnv.getBoundingClientRect().top];
+            const ori = (Math.random()*(0.15 - 0)+(0)) * Math.PI * (Math.random() < 0.5 ? -1: 1);
+            const r1 = Math.random()*(vmin*0.2 - vmin*0.05)+(vmin*0.05);
+            let r0 = 0.5*r1, delta = (r1 - r0) / 7;
+            
+            const id = setInterval(() => {
+                r0 += delta;
+                viola.update(px, py, r0, ori);
+                viola.draw(grass);
+                if (r0 >= r1) clearInterval(id);
+            }, 17);
+        })
+    }
+    </script>
+</body>
+</html>

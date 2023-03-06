@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My birthday code</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lisa">
+    <meta name="version" content="2023-03-03">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Comic Sans MS", "Comic Sans", monospace;
+        }
+        /* Leave out paddings or margins. */
+        body {
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            background-color: yellow;
+        }
+        /* Make text hard to read. */
+        marquee {
+            width: 100%;
+            font-size: 1.3em;
+            -moz-transform: scale(-1, 1);
+            -webkit-transform: scale(-1, 1);
+            -o-transform: scale(-1, 1);
+            -ms-transform: scale(-1, 1);
+            transform: scale(-1, 1);
+            z-index: 1;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            color: green;
+        }
+        h1 {
+            color: #0dd;
+        }
+        .msg {
+            width: 50vmin;
+            height: 50vmin;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            margin: 5vh auto;
+        }
+        .msg > div {
+            font-size: 3em;
+            border-radius: 50%;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            background-color: #dec0de;
+            color: #90091e;
+            border: dashed white 6px;
+            animation-name: age-anim;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-timing-function: linear;
+        }
+        button {
+            background: rgb(131,58,180);
+            background: radial-gradient(circle, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%);
+            width: 60px;
+            padding: 10px;
+            margin: auto;
+            display: block;
+            font-size: 2em;
+            box-shadow: 10px 10px orange;
+            border-radius: 50% 0% 0% 0%;
+            animation-name: border-anim;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+        }
+        .btnBox {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            align-content: center;
+            justify-content: space-between;
+        }
+        .cool {
+            text-align: center;
+            color: deeppink;
+            background: limegreen;
+            background: linear-gradient(30deg, limegreen 0%, black 33%, orange 66%, white 100%);
+            min-height: 3em;
+        }
+        .awesome {
+            width: 42%;
+            color: purple;
+            background: white;
+            background: linear-gradient(90deg, white 0%, black 33%, orange 66%, white 100%);
+            font-size: 3em;
+            text-align: right;
+        }
+        
+        h2 {
+            text-align: right;
+            text-transform: uppercase;
+            font-style: italic;
+        }
+        h3 {
+            color: violet;
+        }
+        #ghost {
+            font-size: 3em;
+            position: fixed;
+            z-index: 3;
+            top: 0;
+            left: 10%;
+            animation-name: ghost-anim;
+            animation-duration: 7s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-timing-function: ease-in-out;
+        }
+        #rainbow {
+            font-size: 4em;
+            animation-name: bow-anim;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-direction: forward;
+            animation-timing-function: linear;
+        }
+        .blink {
+            animation-name: blink-anim;
+            animation-duration: 0.75s;
+            animation-iteration-count: infinite;
+            animation-direction: forward;
+            animation-timing-function: linear;
+        }
+        
+        @keyframes age-anim {
+            0% {scale: 2;}
+            100% {scale: 0.5;}
+        }
+        @keyframes ghost-anim {
+            0% {top: 0%;}
+            50% {top: 65%;}
+            100% {top: 0%}
+        }
+        @keyframes bow-anim {
+            from {transform: rotate(0deg);}
+            to {transform: rotate(360deg);}
+        }
+        @keyframes blink-anim {
+            50% {opacity: 0%;}
+        }
+        @keyframes border-anim{
+            0% {border-radius: 50% 0% 0% 0%;}
+            50% {border-radius: 0% 0% 50% 0%;}
+        }
+    </style>
+</head>
+<body>
+    <!-- Write everything in heading tags -->
+    <h1>Happy Birthday</h1>
+    <h1>Let's celebrate!</h1>
+    <div class="awesome">aWeSoMe<br>aWeSoMe</div>
+    <div class='msg'>
+        <div>age++</div>
+    </div>
+    <div id="ghost">&#x1F47B;</div>
+    <div class='btnBox'>
+        <button>&#x1F36B;</button>
+        <button>&#x1F986;</button>
+        <button>&#x1F490;</button>
+    </div>
+    
+    <!-- Make sure you have something that blinks -->
+    <h3 class="blink">LOL. XD. Hi.</h3>
+    <!-- Don't firget gradients -- the more gradients, the better! -->
+    <h2 class="cool">Cool.
+        <!-- You must have at least one spinning element -->
+        <div id="rainbow">&#x1F308;</div>
+        
+    </h2>
+    <h2>Okay, this was my code. Move along. Nothing more to see. Thanks.</h2>
+    
+    <!-- Use at minimum one deprecated tag. -->
+    <marquee><q>I'm glad not to see so many happy birthday codes as of late.</q> <b>B.F.</b> +++ Like me! +++ Follow my YouTube channel. +++ Buy my anti-tiger rock!</marquee>
+    <script>
+    window.onload = () => {
+        // One alert is not enough!
+        alert('Hello...');
+        alert('...world!');
+        alert('Whaaaaat\'s up??????');
+        alert('This is a tutorial.');
+        alert('Don\'t take it serious, okaaay?');
+        confirm('Got it???');
+        let name = 'to you';
+        let tmpname = prompt('Enter your name');
+        if (tmpname != null && tmpname != "") name = tmpname;
+        document.getElementsByTagName('h1')[0].textContent += ` ${name}!`;
+        const btn = document.getElementsByTagName('button');
+        // Add buttons that serve no purpose.
+        const btnMsg = ['Ain\'t nobody friend like chocolate.', 'I am a duck. Why did you click me?', 'This button is doing whatever you think it is.'];
+        for (let idx = 0; idx < btn.length; idx++) {
+            btn[idx].addEventListener('click', () => (alert(btnMsg[idx])));
+        }
+    }
+    </script>
+</body>
+</html>

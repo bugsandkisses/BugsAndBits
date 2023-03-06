@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<!--
+Thank you bell for the help with the composite operation and your ideas!
+-->
+<html>
+    <head>
+        <title>Cookies</title>
+        <meta name="author" content="Lisa">
+        <meta name="keywords" content="">
+        <meta name="description" content="Cookies">
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            html, body {
+                width: 100vw;
+                height: 100vh;
+                position: fixed;
+                margin: auto;
+                padding: 0;
+                background-color: rgba(250, 17, 65, 255);
+                overflow: scroll;
+                cursor: grab;
+                font-family: Helevtica, Verdana, Arial, sans-serif;
+                color: #fff;
+            }
+            h1, h2, h3 {
+                text-align: center;
+            }
+            hr {
+                border: dashed #fff 3px;
+                margin: 20px auto;
+            }
+            main {
+                display: block;
+                margin: auto;
+                width: 95vw;
+            }
+            canvas {
+                display: block;
+                margin: 4px auto;
+            }
+            select {
+                font-family: inherit;
+                width: 33%;
+                background-color: rgba(21, 144, 13, 255);
+                color: inherit;
+                padding: 8px;
+                font-weight: bold;
+                border: dashed #fff 3px;
+            }
+            
+            #cutterCnv {
+                background-color: transparent;
+            }
+            #doughCnv {
+                background-color: rgba(232, 181, 30, 255);
+                cursor: grabbing;
+                border-radius: 12px;
+            }
+            #trayCnv {
+                background-color: #999;
+                border-radius: 12px;
+            }
+            #table {
+                height: 100%;
+            }
+            #cutter {
+                display: flex;
+                align-items: center;
+                justify-content: space-evenly;
+                align-content: center;
+                flex-flow: row wrap;
+                margin: auto;
+            }
+            #cutter > select {
+                display: inline-block;
+                border-radius: 12px;
+            }
+            #bake-btn {
+                display: block;
+                margin: 10px auto;
+                font-family: inherit;
+                background-color: rgba(21, 144, 13, 255);
+                color: inherit;
+                min-width: 200px;
+                min-height: 50px;
+                border-radius: 12px;
+                border: dashed #fff 3px;
+                font-weight: bold;
+                padding: 8px;
+            }
+            #dining-room {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                width: 100vw;
+                height: 100vh;
+                margin: auto;
+                font-family: inherit;
+                background-color: rgba(21, 144, 13, 255);
+                color: inherit;
+                border-radius: 12px;
+                border: dashed #fff 3px;
+            }
+            #dining-room > div {
+                color: inherit;
+                background-color: inherit;
+                margin: auto;
+                width: 90vw;
+                max-width: 400px;
+            }
+            img {
+                display: block;
+                width: 100%;
+                max-width: 400px;
+                margin: auto;
+            }
+        </style>
+    </head>
+    
+    <body>
+    <main>
+        <h1>Cookies</h1>
+        <p id='instr'>Click the dough to cut cookies and bake them!</p>
+        <hr>
+        <h2>Cookie cutters</h2>
+        <div id="cutter">
+            <select name="cutters" id="cutters">
+                <option value="heart">Heart</option>
+                <option value="star">Star</option>
+                <option value="circle">Circle</option>
+                <option value="square">Square</option>
+                <!-- <option value="">Other</option> -->
+            </select>
+            <div id='box'>
+                <canvas id='cutterCnv'>No canvas, no cookies. Okay, here you have one: &#x1F36A;</canvas>
+            </div>
+        </div>
+        <h2>Dough</h2>
+        <canvas id='doughCnv'>No canvas, no cookies. Okay, here you have one: &#x1F36A;</canvas>
+        <hr>
+        <h2>Tray</h2>
+        <canvas id='trayCnv'>No canvas, no cookies. Okay, here you have one: &#x1F36A;</canvas>
+        <button id='bake-btn'>Bake</button>
+        <hr>
+        <footer>Lisa, 2022-12-24</footer>
+        <hr>
+    </main>
+    <div id="dining-room">
+        <div>
+           <h2>Ready!</h2>
+           <p id="msg"></p>
+        </div>        
+    </div>    
+    
+    <script>
+    window.onload = () => {
+        var mmin, mmax;
+        const cutterCnv = document.getElementById('cutterCnv');
+        const doughCnv = document.getElementById('doughCnv');
+        const trayCnv = document.getElementById('trayCnv');
+        const cutterCtx = cutterCnv.getContext('2d');
+        const doughCtx = doughCnv.getContext('2d');
+        const trayCtx = trayCnv.getContext('2d');
+        const cuttersDrop = document.getElementById('cutters');
+        
+        const tray = {isBaking: false,
+                      isBaked: false,
+                      bakingTime: 4, // sec
+                      xs: Array(),
+                      ys: Array(),
+                      cutter: Array()};
+        const cookie = {baseN: 5,
+                        n: 0,
+                        x: Array(), y: Array(),
+                        cutter: cuttersDrop.options[cuttersDrop.selectedIndex].value,
+                        doughColor: [232, 181, 30, 255], // not baked
+                        noColor: [250, 17, 65, 255], // same as bg
+                        cutterColor: [21, 144, 13, 255]};
+        const black = [0,0,0,255];
+        go();
+        
+        // setup
+        function go() {
+            // set dough and tray
+            mmin = doughCnv.parentElement.clientWidth < doughCnv.parentElement.clientHeight ? doughCnv.parentElement.clientWidth : doughCnv.parentElement.clientHeight;
+            mmax = doughCnv.parentElement.clientWidth > doughCnv.parentElement.clientHeight ? doughCnv.parentElement.clientWidth : doughCnv.parentElement.clientHeight;
+            doughCnv.width = doughCnv.height = trayCnv.width = trayCnv.height = mmin > 400 ? 400 : mmin;
+            // set cookie
+            cookie.radius = (0.5*doughCnv.width)/(cookie.baseN + 0.5);
+            cookie.doughColor = [232, 181, 30, 255];
+            // set cutter
+            document.getElementById('box').style.height = document.getElementById('box').style.width = 2*cookie.radius+'px';
+            document.getElementById('cutter').style.height = 2.5*cookie.radius+'px';
+            cutterCnv.width = cutterCnv.height = cookie.radius*2;
+            selectCutter();
+            // set tray
+            tray.x = tray.y = (trayCnv.width - 2*cookie.radius*cookie.baseN) / 2 + cookie.radius;
+            // set text
+            document.getElementById('instr').innerText = `Cut ${cookie.baseN*cookie.baseN} cookies from the dough and bake them!`;
+        }
+        
+        // add event listeners
+        cuttersDrop.addEventListener('change', function() {
+            // select cookie cutter shape
+            selectCutter();
+        });
+        document.getElementById('bake-btn').addEventListener('click', function(ev) {
+            // bake cookies
+            if (cookie.n < 1) return;
+            if (tray.isBaked) return;
+            tray.isBaking = true;
+            let t = 0;
+            let id = setInterval(function() {
+                if (++t >= tray.bakingTime) {
+                    tray.isBaked = true;
+                    clearInterval(id);
+                    serve();
+                }
+                bake();
+            }, 1000);
+        });
+        doughCnv.addEventListener('click', function(ev) {
+            // cut cookies and place on tray
+            if (tray.isBaked) return;
+            if (tray.isBaked) return;
+            const [offX, offY] = [doughCnv.getBoundingClientRect().left, doughCnv.getBoundingClientRect().top];
+            let [x, y] = [ev.pageX - offX, ev.pageY - offY];
+            if (cookie.n < cookie.baseN*cookie.baseN) {
+                const prevState = doughCtx.getImageData(0, 0, doughCnv.width, doughCnv.height);
+                if (isInRect(x, y, doughCnv.width, doughCnv.height, cookie.radius)) {
+                    // dough: cut cookie
+                    drawCookie(doughCtx, x, y, cookie.radius, `rgba(${cookie.noColor[0]},${cookie.noColor[1]},${cookie.noColor[2]},${[cookie.noColor[3]]})`, cookie.cutter);
+                    doughCtx.globalCompositeOperation = 'difference';
+                    let isOverlapping = false;
+                    let imgData = doughCtx.getImageData(x-cookie.radius-10, y-cookie.radius-10, cookie.radius*2+10, cookie.radius*2+10);
+                    for (let i = 0; i+3 < imgData.data.length; i+=4) {
+                        let pixColor = [imgData.data[i], 
+                                        imgData.data[i+1], 
+                                        imgData.data[i+2],
+                                        imgData.data[i+3]];
+                        isOverlapping = pixColor.length === black.length && pixColor.every((val, idx) => val === black[idx]);
+                        if (isOverlapping) break;
+                    }
+                    if (isOverlapping) {
+                        doughCtx.putImageData(prevState, 0, 0); // console.log(isOverlapping);
+                        return;
+                    }
+                    else {
+                    // tray: place cookie
+                        drawCookie(trayCtx, tray.x, tray.y, cookie.radius, `rgba(${cookie.doughColor[0]},${cookie.doughColor[1]},${cookie.doughColor[2]},${[cookie.doughColor[3]]})`, cookie.cutter);
+                        tray.xs.push(tray.x), tray.ys.push(tray.y), tray.cutter.push(cookie.cutter);
+                        tray.x += 2*cookie.radius;
+                        if ((cookie.n+1) % cookie.baseN == 0) {
+                            tray.x = (trayCnv.width - 2*cookie.radius*cookie.baseN)/2 + cookie.radius;
+                            tray.y += 2*cookie.radius;
+                        }
+                        // update
+                        cookie.x[cookie.n] = x;
+                        cookie.y[cookie.n] = y;
+                        cookie.n++;
+                    }
+                }
+            }
+            else {
+                alert('Your tray is full. Time to bake the cookies!');
+            }
+        })
+        
+        // drawing functions
+        function drawCookie(ctx, x, y, radius, color, type = 'circle') {
+            // draw cookie shape
+            ctx.lineWidth = 0;
+            ctx.fillStyle = color;
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            switch (type) {
+                case 'circle':
+                    ctx.arc(x, y, radius, 0, 2*Math.PI);
+                    break;
+                case 'square':
+                    ctx.rect(x-radius, y-radius, 2*radius, 2*radius);
+                    break;
+                case 'star':
+                    drawStar(ctx, x, y, 5, radius, radius*0.6, color);
+                    break;
+                case 'heart':
+                    drawHeart(ctx, x, y, radius);
+                    break;
+                default:
+                    ctx.arc(x, y, radius, 0, 2*Math.PI);
+                    break;
+            }
+            ctx.fill();
+            ctx.closePath();
+        }
+        function drawStar(ctx, x, y, n, outerRadius, innerRadius) {
+            // draw star
+            // https://stackoverflow.com/a/25840319
+            // (no translate)
+            let rad = Math.PI/2*3, radHalfStep = Math.PI / n;
+            let xx = x, yy = y;
+            ctx.moveTo(x, y - outerRadius);
+            for (let i = 0; i < n; i++){
+                // outer
+                xx = x + Math.cos(rad) * outerRadius;
+                yy = y + Math.sin(rad) * outerRadius;
+                ctx.lineTo(xx, yy);
+                rad += radHalfStep;
+                // inner
+                xx = x + Math.cos(rad) * innerRadius;
+                yy = y + Math.sin(rad) * innerRadius;
+                ctx.lineTo(xx, yy);
+                rad += radHalfStep;
+            }
+            ctx.lineTo(x, y - outerRadius);
+        }
+        function drawHeart(ctx, x, y, radius) {
+            // draw heart
+            // cf. https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes
+            // (bezier curves)
+            ctx.moveTo(x - radius, y);
+            ctx.bezierCurveTo(x - radius, y - radius, x, y - radius, x, y - radius / 4);
+            ctx.bezierCurveTo(x, y - radius, x + radius, y - radius, x + radius, y);
+            ctx.bezierCurveTo(x + radius, y + radius / 2, x, y + radius, x, y + radius);
+            ctx.bezierCurveTo(x, y + radius, x - radius, y + radius / 2, x - radius, y);
+        }
+
+        // kitchen skills
+        function selectCutter() {
+            // get cookie cutter shape from dropdown
+            cookie.cutter = cuttersDrop.options[cuttersDrop.selectedIndex].value;
+            cutterCtx.clearRect(0, 0, cutterCnv.width, cutterCnv.height);
+            drawCookie(cutterCtx, cutterCnv.width/2, cutterCnv.width/2, cutterCnv.width/2, `rgba(${cookie.cutterColor[0]},${cookie.cutterColor[1]},${cookie.cutterColor[2]},${[cookie.cutterColor[3]]})`, cookie.cutter);
+        }
+        function bake() {
+            let decr = 14;
+            // change cookie color when baking
+            cookie.doughColor[0] = cookie.doughColor[0] - decr > 0 ? cookie.doughColor[0] - decr: 0;
+            cookie.doughColor[1] = cookie.doughColor[1] - decr > 0 ? cookie.doughColor[1] - decr: 0;
+            cookie.doughColor[2] = cookie.doughColor[2] - decr > 0 ? cookie.doughColor[2] - decr: 0;
+            for (let c = 0; c < tray.cutter.length; c++) {
+                drawCookie(trayCtx, tray.xs[c], tray.ys[c], cookie.radius, `rgba(${cookie.doughColor[0]},${cookie.doughColor[1]},${cookie.doughColor[2]},${cookie.doughColor[3]})`, tray.cutter[c]);
+            }
+        }
+        function serve() {
+            const msg = document.getElementById("msg");
+            msg.innerText = `You made ${cookie.n} ${cookie.n == 1 ? "cookie": "cookies"}. Enjoy and share ${cookie.n == 1 ? "it": "them"} with someone you love!`;           
+            const img = new Image();
+            img.src = trayCnv.toDataURL();                     
+            const dr = document.getElementById("dining-room");
+            dr.appendChild(img);
+            dr.style.display = "block";
+        }
+
+        // geom helper functions
+        function dist2d(x0, y0, x1, y1) {
+            // Euclidean distance, 2D
+            return Math.sqrt((Math.pow(x1 - x0, 2)) + (Math.pow(y1 - y0, 2)));
+        }
+        function isInRect(x, y, w, h, b) {
+            // vertex in rectangle
+            return (x > b) & (y > b) & (x < w-b) & (y < h-b);
+        }
+    }
+    </script>
+    </body>
+</html>

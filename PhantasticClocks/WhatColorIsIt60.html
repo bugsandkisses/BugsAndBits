@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>What Time is It?</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lisa">
+
+    <style>
+        :root {
+            --mainCol: #000;
+            --fontCol: #fff;
+            --offCol: #fff;
+            --onCol: #bee71e;
+            --pxSize: 20px;
+            --fWidth: 96px;
+            --fHeight: 72px;
+            --hWidth: 24px;
+            --hHeight: 120px;
+            --numSize: 10px;
+        }
+        
+        body {
+            margin: auto;
+            color: #000;
+            font-family: Courier, Arial;
+            background-color: var(--mainCol);
+        }
+        main {
+            width: 80%;
+            margin: auto;
+        }
+        h1{
+            text-align: center;
+            color: var(--fontCol);
+        }
+        footer {
+            margin: 10px auto;
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+            color: var(--fontCol);
+        }
+        
+        .container {
+            display: flex; 
+            justify-content: center; 
+            justify-items: center; 
+            align-items: center;
+            margin: auto;
+            flex-flow: row wrap;
+            text-align: center;
+            padding: 10px;
+        }
+        .container > div {
+            display: flex;
+            flex-flow: column wrap;
+            justify-content: space-evenly; 
+            justify-items: center; 
+            align-items: center;
+            margin: auto 4px;
+        }
+        .finger {
+            width: var(--fWidth);
+            height: var(--fHeight);
+        }
+        .hand {
+            width: var(--hWidth);
+            height: var(--hHeight);
+        }
+        .cell {
+            width: var(--pxSize);
+            height: var(--pxSize);
+            border: solid  var(--mainCol) 2px;
+            border-radius: 50%;
+            font-size: var(--numSize);
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+        }
+        .cellOff {
+            background-color: var(--offCol);
+        }
+        .cellOn {
+            background-color: var(--onCol);
+        }
+        
+        #test {
+            color: var(--fontCol);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>What Time is It?</h1>
+
+        <div class="container">
+            <div class="finger" id="hoursF"></div>
+            <div class="hand" id="hoursH"></div>
+        </div>
+        
+        <div class="container" id="minutes">
+            <div class="finger" id="minutesF"></div>
+            <div class="hand" id="minutesH"></div>
+        </div>
+        
+        <div class="container" id="seconds">
+            <div class="finger" id="secondsF"></div>
+            <div class="hand" id="secondsH"></div>
+        </div>
+        
+        <div class="container" id="test"></div>
+        
+        <footer>2021-09-24, Lisa</footer>
+    </main>
+    
+    <script>
+    onload = () => {
+        // ---------------------------------
+        // variables and start ----
+        // html
+        const root = document.querySelector(':root');
+        const withNum = false;
+        const test = document.getElementById("test");
+        var HF, HH, MF, MH, SF, SH;
+        // loop
+        var reqID, timestamp, delta = 0, lastRender = 0;
+        const minDelta = 120;
+        // time code
+        var now;
+        var nowCode = {"h0": 0, "h1": 0,
+                       "m0": 0, "m1": 0,
+                       "s0": 0, "s1": 0};
+        // initialize
+        init();
+        // ---------------------------------
+        // setup
+        function setSize() {
+            let pxSize = parseInt(window.innerHeight/(6*6));
+            let b = 4;
+            root.style.setProperty('--pxSize', '' + (pxSize-b) + 'px');
+            root.style.setProperty('--fWidth', '' + ((pxSize)*4)+ 'px');
+            root.style.setProperty('--fHeight', '' + ((pxSize)*3)+ 'px');
+            root.style.setProperty('--hWidth', '' + ((pxSize)*1)+ 'px');
+            root.style.setProperty('--hHeight', '' + ((pxSize)*5)+ 'px');
+            root.style.setProperty('--numSize', '' + parseInt((pxSize)*0.65)+ 'px');
+        }
+        function init() {
+            setSize();
+            createFingerParts();
+            createHands();
+            setHMS();
+            now = new Date();
+            setTimeCode(now);
+            setTime();
+            reqID = requestAnimationFrame(timeLoop);
+        }
+        // ---------------------------------
+        // create cells/ html ----
+        function createFingerParts() {
+            let f = document.getElementsByClassName('finger');
+            for (let i = 0; i < f.length; i++) {
+                for (let j = 0; j < 12; j++) {
+                    let cell = document.createElement('div');
+                    if (withNum) cell.textContent = '' + (j+1);
+                    cell.classList.add('cell', "cellOff");
+                    f[i].appendChild(cell);
+                }
+            }
+        }
+        function createHands() {
+            let ha = document.getElementsByClassName('hand');
+            for (let i = 0; i < ha.length; i++) {
+                for (let j = 0; j < 5; j++) {
+                    let cell = document.createElement('div');
+                    if (withNum) cell.textContent = '' + (j+1);
+                    cell.classList.add('cell', "cellOff");
+                    ha[i].appendChild(cell);
+                }
+            }
+        }
+        // ---------------------------------
+        // time fun ----
+        function setHMS() {
+            HF = document.getElementById('hoursF').children;
+            HH = document.getElementById('hoursH').children;
+            MF = document.getElementById('minutesF').children;
+            MH = document.getElementById('minutesH').children;
+            SF = document.getElementById('secondsF').children;
+            SH = document.getElementById('secondsH').children;
+        }
+        function setTimeCode(time) {
+            nowCode.h0 = (time.getHours() % 12) - 1;
+            nowCode.h1 = Math.floor(time.getHours() / 12) - 1;
+            nowCode.m0 = (time.getMinutes() % 12) -1 ;
+            nowCode.m1 = Math.floor(time.getMinutes() / 12) - 1;
+            nowCode.s0 = (time.getSeconds() % 12) - 1;
+            nowCode.s1 = Math.floor(time.getSeconds() / 12) - 1;
+        }
+        function setTime() {
+            for (let i = 0; i < 12; i++) {
+                if (i >= 0) {
+                    if (i == nowCode.h0) {
+                        HF[i].classList.add('cellOn');
+                        HF[i].classList.remove('cellOff');
+                    } else {
+                        HF[i].classList.add('cellOff');
+                        HF[i].classList.remove('cellOn');
+                    }
+                    if (i == nowCode.m0) {
+                        MF[i].classList.add('cellOn');
+                        MF[i].classList.remove('cellOff');
+                    } else {
+                        MF[i].classList.add('cellOff');
+                        MF[i].classList.remove('cellOn');
+                    }
+                    if (i == nowCode.s0) {
+                        SF[i].classList.add('cellOn');
+                        SF[i].classList.remove('cellOff');
+                    } else {
+                        SF[i].classList.add('cellOff');
+                        SF[i].classList.remove('cellOn');
+                    }
+                    if (i < 5) {
+                        if (i == nowCode.h1) {
+                            HH[i].classList.add('cellOn');
+                            HH[i].classList.remove('cellOff');
+                        } else {
+                            HH[i].classList.add('cellOff');
+                            HH[i].classList.remove('cellOn');
+                        }
+                        if (i == nowCode.m1) {
+                            MH[i].classList.add('cellOn');
+                            MH[i].classList.remove('cellOff');
+                        } else {
+                            MH[i].classList.add('cellOff');
+                            MH[i].classList.remove('cellOn');
+                        }
+                        if (i == nowCode.s1) {
+                            SH[i].classList.add('cellOn');
+                            SH[i].classList.remove('cellOff');
+                        } else {
+                            SH[i].classList.add('cellOff');
+                            SH[i].classList.remove('cellOn');
+                        }
+                    }
+                }
+            }
+        }
+        // ---------------------------------
+        // loop ----
+        function timeLoop(timestamp) {
+            delta = timestamp - lastRender;
+            if (delta >= minDelta) {
+                // update
+                now = new Date();
+                setTimeCode(now);
+                setTime();
+                //test.textContent = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+                lastRender = timestamp;
+            }
+            reqID = requestAnimationFrame(timeLoop);
+        }
+    }
+    </script>
+</body>
+</html>

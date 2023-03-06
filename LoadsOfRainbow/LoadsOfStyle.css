@@ -1,0 +1,38 @@
+body {
+    box-sizing: border-box;
+    margin: auto;
+    width: 96vw;
+    background-color: #bee;
+    font-family: Verdana, Arial, sans-serif;
+}
+h1 {
+    text-align: center;
+}
+
+#cnv {
+    background-color: #bee;
+    margin: auto;
+    display: block;
+}
+
+#btn, #btn:disabled {
+    all: unset;
+    display: block;
+    margin: auto;
+    width: 85vmin;
+    max-width: 250px;
+    min-height: 4em;
+    padding: 16px;
+    text-align: center;
+    background-color: #fff;
+    border-style: none;
+    border-radius: 20px;
+    font-family: inherit;
+    color: #555;
+    font-size: 1.2em;
+    box-shadow: 10px 10px 10px #0005;
+}
+#btn:disabled {
+    font-style: italic;
+    color: #d07;
+}

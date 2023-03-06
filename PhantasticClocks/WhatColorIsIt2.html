@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>What Time is It?</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lisa">
+
+    <style>
+        :root {
+            --mainCol: #fff;
+            --fontCol: #000;
+            --heartCol: #ff0554;
+        }
+        
+        body {
+            margin: auto;
+            width: 100vw;
+            color: var(--fontCol);
+            font-family: Courier, Arial;
+            background-color: var(--mainCol);
+        }
+        main {
+            margin: auto;
+            width: 85vw;
+        }
+        h1{
+            text-align: center;
+            color: var(--fontCol);
+        }
+        footer {
+            margin: 10px auto;
+            font-size: 16px;
+            text-align: center;
+            width: 100%;
+            color: var(--fontCol);
+        }
+        
+        .container {
+            width: 100%;
+            display: flex; 
+            justify-content: center; 
+            justify-items: center; 
+            align-items: center;
+            margin: auto;
+            flex-flow: row wrap;
+            text-align: center;
+        }
+        .container > div {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-evenly; 
+            justify-items: center; 
+            align-items: center;
+            margin: auto;
+            width: 14vw;
+            height: 14vw;
+        }
+        
+        .heart {
+            background-color: var(--heartCol);
+            height: 5vw; 
+            width: 5vw;
+            display: inline-block;
+            position: relative;
+            transform: rotate(-45deg);
+        }
+        .heart:before {
+            content: "";
+            background-color: var(--heartCol);
+            position: absolute;
+            left: 0;
+            border-radius: 5vw;
+            height: 5vw;
+            width: 5vw;
+            top: -2.5vw;
+            left: 0;
+        }
+        .heart:after {
+            content: "";
+            background-color: var(--heartCol);
+            position: absolute;
+            top: 0;
+            border-radius: 5vw;
+            height: 5vw;
+            width: 5vw;
+            left: 2.5vw;
+        }
+        .beatshour {
+            animation: heart-beat 2s infinite;
+        }
+        .beatsmin {
+            animation: heart-beat 1.5s infinite;
+        }
+        .beatssec {
+            animation: heart-beat2 0.49s infinite;
+        }
+        /*.beat {
+            animation: heart-beat 0.49s infinite;
+        }*/
+        
+        @keyframes heart-beat {
+            0% {
+                transform: scale(0.8) rotate(-45deg);
+                opacity: 0.8;
+            }
+            34% {
+                transform: scale(1.2) rotate(-45deg);
+                opacity: 1;
+            }
+            67% {
+                transform: scale(0.8) rotate(-45deg);
+                opacity: 0.8;
+            }
+            101% {
+                transform: scale(1.2) rotate(-45deg);
+                opacity: 1;
+            }
+        }
+        @keyframes heart-beat2 {
+            0% {
+                transform: scale(0.8) rotate(-45deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.2) rotate(-45deg);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>What Time is It?</h1>
+        <div class="container" id="hour"></div>
+        <div class="container" id="minute"></div>
+        <div class="container" id="second"></div>
+        
+        <footer>2021-10-04, Lisa</footer>
+    </main>
+    
+    <script>
+    onload = () => {
+        // -----------------
+        // vars
+        var reqID, timestamp, delta = 0, lastRender = 0;
+        const minDelta = 30;
+        var now;
+        var time = {hh: -99, mm: -99, ss: -99};
+        const h = document.getElementById("hour"); var hh;
+        const m = document.getElementById("minute"); var mm;
+        const s = document.getElementById("second"); var ss;
+        const n = 6;
+        start(); // go!
+
+        // -----------------
+        // make <3
+        function createHearts() {
+            var child, heart;
+            for (let i = 0; i < n; i++) {
+                child = document.createElement("div");
+                heart = document.createElement("div");
+                heart.classList.add("heart"); heart.classList.add("hour");
+                child.appendChild(heart);
+                h.appendChild(child);
+                child = document.createElement("div");
+                heart = document.createElement("div");
+                heart.classList.add("heart"); heart.classList.add("minute");
+                child.appendChild(heart);
+                m.appendChild(child);
+                child = document.createElement("div");
+                heart = document.createElement("div");
+                heart.classList.add("heart"); heart.classList.add("second");
+                child.appendChild(heart);
+                s.appendChild(child);
+            }
+            hh = document.getElementsByClassName("hour");
+            mm = document.getElementsByClassName("minute");
+            ss = document.getElementsByClassName("second");
+        }
+        // -----------------
+        // set time
+        function setHours(hours) {
+            hours = hours.toString(2);
+            hours = '0'.repeat(n-hours.length) + hours;
+            for (let i = 0; i < hours.length; i++) {
+                hh[i].classList.remove("beatshour");
+                if (hours.charAt(i) == "1") {
+                    hh[i].classList.add("beatshour");
+                }
+            }
+        }
+        function setMinutes(min) {
+            min = min.toString(2);
+            min = '0'.repeat(n-min.length) + min;
+            for (let i = 0; i < min.length; i++) {
+                mm[i].classList.remove("beatsmin");
+                if (min.charAt(i) == "1") {
+                    mm[i].classList.add("beatsmin");
+                }
+            }
+        }
+        function setSeconds(sec) {
+            sec = sec.toString(2);
+            sec = '0'.repeat(n-sec.length) + sec;
+            //console.log(sec);
+            for (let i = 0; i < sec.length; i++) {
+                ss[i].classList.remove("beatssec");
+                if (sec.charAt(i) == "1") {
+                    ss[i].classList.add("beatssec");
+                }
+            }
+        }
+        function setHeartbeats() {
+            now = new Date();
+            if (!(now.getHours() == time.hh)) {
+                time.hh = now.getHours();
+                if (time.hh > 23) time.hh = 0;
+                setHours(time.hh);
+            }
+            if (!(now.getMinutes() == time.mm)) {
+                time.mm = now.getMinutes();
+                if (time.mm > 59) time.mm = 0;
+                setMinutes(time.mm);
+            }
+            if (!(now.getSeconds() == time.ss)) {
+                time.ss = now.getSeconds();
+                if (time.ss > 59) time.ss = 0;
+                setSeconds(time.ss);
+                //console.log(time.hh + ":" + time.mm + ":" + time.ss + " " + time.ss.toString(2));
+            }
+        }
+        // -----------------
+        // loop
+        function timeLoop(timestamp) {
+            delta = timestamp - lastRender;
+            if (delta >= minDelta) {
+                // update
+                setHeartbeats();
+                lastRender = timestamp;
+            }
+            reqID = requestAnimationFrame(timeLoop);
+        }
+        // -----------------
+        // start
+        function start() {
+            createHearts();
+            setHeartbeats();
+            reqID = requestAnimationFrame(timeLoop);
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Daisy Love Oracle</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lisa">
+    <link rel="stylesheet" href="DaisyStyle.css">
+    </head>
+<body>
+
+        <h1>The Daisy Love Oracle</h1>
+        <canvas id="cnv"></canvas>
+        <div id="poem"></div>
+        <div id="letterbtn"><div id='emoji'>&#x1F48C;</div>Click!</div>
+        <div id="letter" class="modal">
+            <span id='closeLetter'>&times;</span>
+            <div class="modal-content">
+                <p>&#x1F48C;</p>
+                <p>
+                    The Daisy follows soft the Sun<br>
+                    And when his golden walk is done<br>
+                    Sits shyly at his feet<br>
+                    He &mdash; waking &mdash; finds the flower there<br>
+                    Wherefore &mdash; Marauder &mdash; art thou here?<br>
+                    Because, Sir, love is sweet!
+                </p>
+                <p>
+                    We are the Flower &mdash; Thou the Sun!<br>
+                    Forgive us, if as days decline<br>
+                    We nearer steal to Thee!<br>
+                    Enamored of the parting West<br>
+                    The peace &mdash; the flight &mdash; the Amethyst<br>
+                    Night's possibility!
+                </p>
+                <p style='text-align: right'>Emily Dickinson</p>
+            </div>
+            <div class="modal-content">
+                <p>&#x1F494;</p>
+                <p>
+                    Daisies know the sun will dry
+                </p>
+                <p style='text-align: right'>Annette Wynne</p>
+            </div>
+        </div>
+
+        <button id="infobtn">???</button>
+        <div id="info" class="modal">
+            <span id='closeInfo'>&times;</span>
+            <div class="modal-content">
+                <p>Pick the petals and let the Daisy reveal its prophecy! The very last petal will tell if your crush loves you.</p>
+                <p>Swipe from the Daisy's yellow inner outwards alongside of a petal. You should be able to see an orange line from the center to your finger's position.</p>
+                <p>Use the oracle at your own risk. Adverse effects cannot be ruled out. No refund. Results may vary. Prophecy may diverge from reality.</p>
+                <div class="footer">
+                    <p>Lisa, 2022-05-29</p>
+                    <p>References:</p>
+                    <ul>
+                        <li>Thanks to bell for inspiration and testing!</li>
+                        <li><a href="https://stackoverflow.com/a/46740404">Draw petal paths with Path2D()</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="select" class="modal">
+            <span id='closeSelect'>&times;</span>
+            <div class="modal-content">
+                <p>Pick the petals and let the Daisy reveal its prophecy!</p>
+                <p>Your love interest:</p>
+                <p>
+                    <input type="radio" id="li0" name="loveinterest" value="*" checked><label for="li0"><input id="li00" type="text" maxlength="40" placeholder="name"></label><br>
+                    <input type="radio" id="li1" name="loveinterest" value="he"><label for="li1">he</label><br>
+                    <input type="radio" id="li2" name="loveinterest" value="she"><label for="li2">she</label><br>
+                    <input type="radio" id="li3" name="loveinterest" value="them"><label for="li3">them</label>
+                </p>
+                <p>Likelihood:</p>
+                <p>&#x1F494;<input type="range" id="like" min="1" max="9" value="5">&#x1F495;</p>
+                <p>Disclaimer:</p>
+                <p><input type="checkbox" id="consent"><label for="consent">I consent to my heart getting possibly broken.</label></p>
+            </div>
+        </div>
+
+
+    <script src="DaisyFun.js"></script>
+</body>
+</html>

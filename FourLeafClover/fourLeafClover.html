@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Four-Leaf Clover</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lisa">
+    
+    <style>
+        :root {
+            --lawn: #7CFC00;
+            --fontCol: #000;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            width: 100vw;
+            margin: auto;
+            position: fixed;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            font-family: "Courier New", Courier, monospace, Arial, sans-serif;
+            color: var(--fontCol);
+            background-color: var(--lawn);
+        }
+        #info {
+            text-align: center;
+            height: 20vh;
+            width: 100vw;
+            margin: 0;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-evenly;
+            align-items: center;
+            align-content: center;
+            background-color: inherit;
+        }
+        * > #info {
+            font-weight: bold;
+        }
+        h1 > #info {
+            width: 99%;
+        }
+        div > #info {
+            width: 48%;
+        }
+        input[type='text'] {
+            font-family: inherit;
+            font-size: 2.3vh;
+            color: inherit;
+            text-align: right;
+            border-radius: 2vmin;
+            padding: 2vmin;
+            border-style: none;
+            background-color: #fff;
+            font-weight: inherit;
+        }
+        canvas {
+            margin: 0;
+            background-color: inherit;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='info'>
+        <h1>Four-Leaf Clover</h1>
+        <div>Time: <input type='text' id='time' size=5 disabled></div>
+        <div>Score: <input type='text' id='score' size=4 disabled></div>
+    </div>
+    <canvas id="cnv"></canvas>
+
+    <script>
+    window.onload = () => {
+        // canvas
+        const cnv = document.getElementById('cnv');
+        const ctx = cnv.getContext('2d');
+        const timer = document.getElementById('time');
+        cnv.width = parseInt(screen.width*1);
+        cnv.height = parseInt(window.innerHeight*0.8);
+        let m = cnv.width < cnv.height ? cnv.width : cnv.height;
+        // clover data and methods
+        const clover = {
+            size: parseInt(m*0.03*2) > 18 ? parseInt(m*0.03*2) : 18,
+            pos: null,
+            lucky: null,
+            getLuckyPos: function() {
+                try {
+                    return [this.pos[this.lucky].x, this.pos[this.lucky].y];
+                }
+                catch (err){
+                    return [NaN, NaN];
+                }
+            },
+            n: 2,
+            score: 0
+        };
+        // park data and methods
+        const park = {
+            rect: [0+cnv.width*0.1, 0+cnv.height*0.1, cnv.width-cnv.width*0.1, cnv.height-cnv.height*0.1],
+            offset: [cnv.getBoundingClientRect().left, cnv.getBoundingClientRect().top],
+            handX: -1, handY: -1,
+            isFound: function(x, y, maxDist) {
+            // dist (x, y) - hand
+                return Math.sqrt((Math.pow(x - this.handX, 2)) + (Math.pow(y - this.handY, 2))) <= maxDist;
+            },
+            enabled: true,
+            timeMax: 60,
+            leavesMax: 60
+        };
+        
+        function sample(lower, upper) {
+            // sample integer [lower; upper]
+            return parseInt(Math.random() * (upper - lower) + lower);
+        }
+        function sampleCoords(lowerX, lowerY, upperX, upperY, n) {
+            // sample n coordinates in rect [lowerX, lowerY, upperX, upperY]
+            let pos = new Array(n);
+            while (n > 0) {
+                pos[n-1] = {x: sample(lowerX, upperX), y: sample(lowerY, upperY)};
+                n--;
+            }
+            return pos;
+        }
+        function leaf(size) {
+            // path for single leaf
+            let path = new Path2D();
+            path.moveTo(0, 0);
+            path.lineTo(size * 0.8, -size*0.5);
+            path.lineTo(size * 0.9, -size*0.5);
+            path.bezierCurveTo(size*1.1, -size*0.4, size*1.1, size*0.4, size*0.9, size*0.5);
+            path.lineTo(size * 0.8, size*0.5);
+            path.closePath();
+            path.moveTo(0, 0);
+            return path;
+        }
+        
+        function drawClover(ctx, clover, luckyIdx) {
+            // draw 3- and 4-leaf clover
+            ctx.strokeStyle = '#006200';
+            ctx.fillStyle = '#00aa00';
+            let leaves, step;
+            for (let i = 0; i < clover.pos.length; i++) {
+                leaves = clover.lucky == i ? 4 : 3;
+                step = (Math.PI * 2) / leaves;
+                ctx.setTransform(1, 0, 0, 1, clover.pos[i].x, clover.pos[i].y);
+                ctx.rotate((sample(0, 359) * Math.PI) / 180);
+                for (let i = 0; i < leaves; i++) {
+                    ctx.fill(clover.leaf);
+                    ctx.stroke(clover.leaf);
+                    ctx.rotate(step);
+                }
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            }
+        }
+        function countDown(timestamp) {
+            // update timer
+            park.timeLeft = (new Date().getTime() - park.start.getTime()) / 1000;
+            park.id = window.requestAnimationFrame(countDown);
+            timer.value = park.timeMax - Math.round(park.timeLeft);
+            if (park.timeLeft >= park.timeMax) {
+                window.cancelAnimationFrame(park.id);
+                cnv.removeEventListener('click', pick);
+                ctx.clearRect(0, 0, cnv.width, cnv.height);
+                document.getElementById('info').style.display = 'none';
+            }
+        }
+        function pick(ev) {
+            // check if 4-leaf clover picked and  update score
+            if (park.enabled) {
+                park.handX = ev.pageX - park.offset[0];
+                park.handY = ev.pageY - park.offset[1];
+                if (park.isFound(...clover.getLuckyPos(), clover.size)) {
+                    clover.n = clover.n < park.leavesMax ? ++clover.n : 21;
+                    clover.score++;
+                    ctx.clearRect(0, 0, cnv.width, cnv.height);
+                    park.enabled = false; setTimeout(grow, 250);
+                } else {
+                    clover.score--;
+                }
+                document.getElementById('score').value = clover.score;
+            }
+        }
+        function grow() {
+            // new display
+            park.handX = NaN, park.handY = NaN;
+            clover.leaf = leaf(clover.size);
+            clover.pos = sampleCoords(...park.rect, clover.n);
+            clover.lucky = sample(0, clover.pos.length-1);
+            drawClover(ctx, clover, clover.lucky);
+            park.enabled = true;
+        }
+        // let's go!
+        document.getElementById('score').value = clover.score;
+        grow();
+        cnv.addEventListener('click', pick);
+        park.start = new Date();
+        park.id = countDown();
+    }
+    </script>
+</body>
+</html>
