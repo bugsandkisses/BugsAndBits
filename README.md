@@ -1,2 +1,5 @@
 # BugsAndBits
-Misc. solo snippets
+
+Misc. solo snippets.
+
+> To be or not to be fixed.
